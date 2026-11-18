@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cajero Web · prj_withdrawal</title>
+<style>
+  :root { --fg:#111; --bg:#fff; --mut:#555; --line:#111; }
+  * { box-sizing: border-box; }
+  body { font: 16px/1.45 system-ui, sans-serif; color: var(--fg); background: var(--bg); margin: 0; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.4rem; margin: 0 0 2px; }
+  .sub { color: var(--mut); margin: 0 0 20px; }
+  .saldo { border: 2px solid var(--line); padding: 14px 18px; margin-bottom: 18px; }
+  .saldo small { display: block; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; font-size: .75rem; }
+  .saldo strong { font-size: 2rem; font-variant-numeric: tabular-nums; }
+  .msg { border: 2px solid var(--line); padding: 10px 14px; margin-bottom: 18px; }
+  .msg.exito { border-style: solid; }
+  .msg.fallo { border-style: dashed; }
+  .msg.error { border-style: double; border-width: 4px; }
+  form { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; margin-bottom: 22px; }
+  label { display: grid; gap: 4px; font-size: .85rem; color: var(--mut); flex: 1 1 140px; }
+  input, select, button { font: inherit; padding: 9px 10px; border: 1.5px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 0; }
+  button { background: var(--fg); color: var(--bg); cursor: pointer; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; border-bottom: 1px solid #bbb; padding: 6px 8px; }
+  th { border-bottom: 2px solid var(--line); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .vacio { color: var(--mut); }
+  .wrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Cajero Web</h1>
+  <p class="sub">Titular: <strong>{{.Titular}}</strong></p>
+
+  <section class="saldo" aria-live="polite">
+    <small>Saldo actual</small>
+    <strong>S/ {{.Saldo}}</strong>
+  </section>
+
+  {{with .Mensaje}}
+  <p class="msg {{.Resultado}}" role="status"><strong>{{.Titulo}}</strong> {{.Detalle}}</p>
+  {{end}}
+
+  <form method="post" action="/operar">
+    <label>Operación
+      <select name="tipo">
+        <option value="retiro">Retirar efectivo</option>
+        <option value="abono">Abonar efectivo</option>
+      </select>
+    </label>
+    <label>Monto (S/)
+      <input name="monto" inputmode="decimal" autocomplete="off" placeholder="0.00" required>
+    </label>
+    <button type="submit">Ejecutar</button>
+  </form>
+
+  <h2 style="font-size:1.05rem">Log de transacciones</h2>
+  <div class="wrap">
+  {{if .Historial}}
+  <table>
+    <thead><tr><th>#</th><th>Tipo</th><th class="num">Monto</th><th>Resultado</th><th class="num">Saldo</th></tr></thead>
+    <tbody>
+    {{range .Historial}}
+      <tr><td>{{.ID}}</td><td>{{.Tipo}}</td><td class="num">{{.Monto}}</td><td>{{.Resultado}}</td><td class="num">{{.SaldoDespues}}</td></tr>
+    {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="vacio">Aún no hay transacciones registradas.</p>
+  {{end}}
+  </div>
+  <p class="vacio" style="margin-top:18px">API JSON: <code>GET /api/saldo</code> · <code>GET /api/transacciones</code> · <code>POST /api/retiro</code> · <code>POST /api/abono</code></p>
+</main>
+</body>
+</html>
